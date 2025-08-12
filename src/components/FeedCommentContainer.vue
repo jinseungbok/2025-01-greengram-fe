@@ -2,36 +2,39 @@
 import FeedCommentCard from './FeedCommentCard.vue';
 import { reactive } from 'vue';
 import { postComment, getCommentList, deleteComment } from '@/services/feedCommentService';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 const props = defineProps({
     feedId: Number,
     comments: Object
 });
 
+const authenticationStore = useAuthenticationStore();
+
 const state = reactive({
     isLoading: false,
     comment: '',
-    //moreComment: props.comments?.moreComment,
-    //commentList: props.comments?.commentList
-    moreComment: true,
-    commentList: [
-        {         
-            feedCommentId: 1,
-            comment: '테스트',
-            writerUserId: 3,
-            writerNickName: null,
-            writerUid: 'mic23',
-            writerPic: '181c59ba-cd2d-4439-8809-c6982c477136.jpg'
-        },
-        {            
-            feedCommentId: 1,
-            comment: '테스트2',
-            writerUserId: 3,
-            writerNickName: null,
-            writerUid: 'mic23',
-            writerPic: '181c59ba-cd2d-4439-8809-c6982c477136.jpg'
-        }
-    ]
+    moreComment: props.comments?.moreComment,
+    commentList: props.comments?.commentList
+    // moreComment: true,
+    // commentList: [
+    //     {         
+    //         feedCommentId: 1,
+    //         comment: '테스트',
+    //         writerUserId: 3,
+    //         writerNickName: null,
+    //         writerUid: 'mic23',
+    //         writerPic: '181c59ba-cd2d-4439-8809-c6982c477136.jpg'
+    //     },
+    //     {            
+    //         feedCommentId: 1,
+    //         comment: '테스트2',
+    //         writerUserId: 3,
+    //         writerNickName: null,
+    //         writerUid: 'mic23',
+    //         writerPic: '181c59ba-cd2d-4439-8809-c6982c477136.jpg'
+    //     }
+    // ]
 });
 
 //댓글 등록
@@ -42,13 +45,25 @@ const onPostComment = async () => {
     }
 
     const data = {
-        feedId: 0,
+        feedId: props.feedId,
         comment: state.comment
     }
 
     const res = await postComment(data);
     if(res.status === 200) {
         const result = res.data.result;
+
+        const commentItem = {
+            feedCommentId: result,
+            writerUserId: authenticationStore.state.signedUser.userId,
+            writerNm: authenticationStore.state.signedUser.nickName,
+            writerPic: authenticationStore.state.signedUser.pic,
+            comment: state.comment
+        }
+
+        state.commentList.unshift(commentItem);
+
+        state.comment = '';
     }
 }
 
