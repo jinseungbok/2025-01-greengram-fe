@@ -74,22 +74,30 @@ const handlePicChanged = e => {
 
 const saveFeed = async () => {
     console.log('state.feed.pics: ', state.feed.pics);
+    const MAX_PIC_COUNT = 10;
     //사진 있는지 확인    
     if(state.feed.pics.length === 0) { 
         alert('사진을 선택해 주세요.');
         return;
+    } else if(state.feed.pics.length > MAX_PIC_COUNT) {
+        alert(`사진은 #{MAX_PIC_COUNT}장까지 선택 가능합니다.`);
+        return;
     }
 
     const params = {
-        contents: state.feed.contents,
-        location: state.feed.location
-    }
+        contents: state.feed.contentslength === 0 ? null : state.feed.contents,
+        location: state.feed.location.length === 0 ? null : state.feed.location
+    } // null은 counting 되지 않음. oracle에서는 null이 치명적
 
     const formData = new FormData();
     formData.append('req', new Blob([JSON.stringify(params)], { type: 'application/json' }));
     for(let i=0; i<state.feed.pics.length; i++) {
         formData.append('pic', state.feed.pics[i])
     }
+
+    // formData.append('pic', state.feed.pics[0])
+    // formData.append('pic', state.feed.pics[0])
+    // formData.append('pic', state.feed.pics[0])
 
     const res = await postFeed(formData);
     if(res.status === 200) {
@@ -115,7 +123,14 @@ const saveFeed = async () => {
     }
 }
 
-const handleScroll = () => {       
+const initInputs = () => {
+    state.feed.contents = '';
+    state.feed.location = '';
+    state.feed.pics = [];
+}
+
+const handleScroll = () => {
+    console.log('스크롤 이벤트');
     if(state.isFinish || state.isLoading || parseInt(window.innerHeight + window.scrollY) + INFINITY_SCROLL_GAP <= document.documentElement.offsetHeight) {
         return;
     }        
@@ -144,6 +159,8 @@ const handleScroll = () => {
                     <div>contents: <textarea name="contents" placeholder="내용" v-model="state.feed.contents"></textarea></div>
                     <div><label>pic: <input name="pics" type="file" multiple accept="image/*" @change="handlePicChanged"/></label></div>
                     <div><button @click="saveFeed">전송</button></div>
+                    <!-- form tag를 주고 required 하는 방법 있음(이미지가 꼭 필요한 경우) -->
+                    <!-- form tag 감싸고 input tag로 해주는 것은 괜찮음 -->
                 </div>
             </div>
         </div>                
