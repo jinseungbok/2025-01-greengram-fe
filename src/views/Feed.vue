@@ -3,8 +3,9 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useAuthenticationStore } from '@/stores/authentication';
 import FeedCard from '@/components/FeedCard.vue';
 import { getFeedList, postFeed } from '@/services/feedService';
+import { bindEvent } from '@/utils/commonUtils';
 
-const INFINITY_SCROLL_GAP = 500;
+
 
 const modalCloseButton = ref(null);
 
@@ -25,6 +26,8 @@ const data = {
     page: 1,
     rowPerPage: 20,    
 };
+
+const handleScroll = () => { bindEvent(state, window, getData) };
 
 onMounted(() => {
     window.addEventListener('scroll', handleScroll);
@@ -69,7 +72,7 @@ const getData = async () => {
 }
 
 const handlePicChanged = e => {
-  state.feed.pics = e.target.files;
+    state.feed.pics = e.target.files;
 }
 
 const saveFeed = async () => {
@@ -80,14 +83,14 @@ const saveFeed = async () => {
         alert('사진을 선택해 주세요.');
         return;
     } else if(state.feed.pics.length > MAX_PIC_COUNT) {
-        alert(`사진은 #{MAX_PIC_COUNT}장까지 선택 가능합니다.`);
+        alert(`사진은 ${MAX_PIC_COUNT}장까지 선택 가능합니다.`);
         return;
     }
 
     const params = {
-        contents: state.feed.contentslength === 0 ? null : state.feed.contents,
+        contents: state.feed.contents.length === 0 ? null : state.feed.contents,
         location: state.feed.location.length === 0 ? null : state.feed.location
-    } // null은 counting 되지 않음. oracle에서는 null이 치명적
+    }
 
     const formData = new FormData();
     formData.append('req', new Blob([JSON.stringify(params)], { type: 'application/json' }));
@@ -96,8 +99,8 @@ const saveFeed = async () => {
     }
 
     // formData.append('pic', state.feed.pics[0])
-    // formData.append('pic', state.feed.pics[0])
-    // formData.append('pic', state.feed.pics[0])
+    // formData.append('pic', state.feed.pics[1])
+    // formData.append('pic', state.feed.pics[2])
 
     const res = await postFeed(formData);
     if(res.status === 200) {
@@ -118,7 +121,7 @@ const saveFeed = async () => {
         };
 
         state.list.unshift(item);
-
+        initInputs();
         modalCloseButton.value.click(); //모달창 닫기
     }
 }
@@ -128,23 +131,13 @@ const initInputs = () => {
     state.feed.location = '';
     state.feed.pics = [];
 }
-
-const handleScroll = () => {
-    console.log('스크롤 이벤트');
-    if(state.isFinish || state.isLoading || parseInt(window.innerHeight + window.scrollY) + INFINITY_SCROLL_GAP <= document.documentElement.offsetHeight) {
-        return;
-    }        
-    getData();  
-};
 </script>
 
 <template>
     <section class="back_color">
         <div class="container d-flex flex-column align-items-center">
             <feed-card v-for="item in state.list" :key="item.id" :item="item"></feed-card>
-            <p v-if="state.isLoading">
-                Loading...
-            </p>
+            <p v-if="state.isLoading">Loading...</p>
         </div>
     </section>
     <div class="modal fade" id="newFeedModal" tabIndex="-1" aria-labelledby="newFeedModalLabel" aria-hidden="false">
@@ -157,14 +150,12 @@ const handleScroll = () => {
                 <div class="modal-body" id="id-modal-body">                            
                     <div>location: <input type="text" name="location" placeholder="위치" v-model="state.feed.location"/></div>
                     <div>contents: <textarea name="contents" placeholder="내용" v-model="state.feed.contents"></textarea></div>
-                    <div><label>pic: <input name="pics" type="file" multiple accept="image/*" @change="handlePicChanged"/></label></div>
+                    <div><label>pic: <input name="pics" type="file" multiple accept="image/*" @change="handlePicChanged" /></label></div>
                     <div><button @click="saveFeed">전송</button></div>
-                    <!-- form tag를 주고 required 하는 방법 있음(이미지가 꼭 필요한 경우) -->
-                    <!-- form tag 감싸고 input tag로 해주는 것은 괜찮음 -->
                 </div>
             </div>
         </div>                
-    </div> 
+    </div>
 </template>
 
 <style scoped>
