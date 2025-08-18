@@ -27,6 +27,7 @@ const props = defineProps({
     pics: Array,
     contents: String,
     isLike: Boolean,
+    likeCount: Number,
     comment: Object
   },
   ynDel: Boolean,
@@ -98,6 +99,7 @@ const toggleLike = async () => {
     </swiper>
     <div class="favCont p-2 d-flex flex-row">
       <i :class="`${state.isLike ? 'fas' : 'far'} fa-heart pointer rem1_2 me-3 color-red`" @click="toggleLike"></i>
+      <!-- <span>13</span> -->
     </div>
     <div class="itemCtnt p-2" v-if="props.item.contents">{{ props.item.contents }}</div>
     <feed-comment-container :feed-id="props.item.feedId" :comments="props.item.comments" />
