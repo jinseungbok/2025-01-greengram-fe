@@ -5,8 +5,9 @@ import { reactive } from 'vue';
 import { postComment, getCommentList, deleteComment } from '@/services/feedCommentService';
 import { useAuthenticationStore } from '@/stores/authentication';
 
+
 const props = defineProps({
-    feedId: String,
+    feedId: { type: [String, Number], required: true },
     comments: Object
 });
 
@@ -17,6 +18,7 @@ const state = reactive({
     comment: '',
     moreComment: props.comments?.moreComment,
     commentList: props.comments?.commentList
+    
 });
 
 const data = {
@@ -54,6 +56,9 @@ const onPostComment = async () => {
 }
 
 const getMoreComment = async () => {
+    console.log('props.comments:', props.comments);
+    console.log('state.commentList:', state.commentList);
+
     //기존 자체 생성한 댓글은 삭제처리 
     const commentList = state.commentList.filter(item => item.isSelf === undefined);
     state.commentList = commentList;
@@ -66,6 +71,8 @@ const getMoreComment = async () => {
         size: data.rowPerPage
     }
     const res = await getCommentList(params)
+    console.log('getCommentList result:', res.data);
+
     if(res.status === 200) {
         const result = res.data.result;
         state.moreComment = result.moreComment;

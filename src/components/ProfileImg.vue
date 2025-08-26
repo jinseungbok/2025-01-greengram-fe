@@ -7,7 +7,7 @@ const authenticationStore = useAuthenticationStore();
 const baseUrl = ref(import.meta.env.VITE_BASE_URL);
 
 const props = defineProps({
-    userId: String,
+    userId: { type: [String, Number], required: true },
     clsValue: String,
     size: Number,
     pic: String  

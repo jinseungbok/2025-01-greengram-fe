@@ -8,6 +8,9 @@ import { checkValidation } from '@/utils/validation';
 const router = useRouter();
 
 const authentication = useAuthenticationStore();
+const beBaseUrl = import.meta.env.VITE_BASE_URL;
+const feBaseUrl = window.location.origin;
+const redirectUrl = `${feBaseUrl}/fe/redirect`;
 
 const state = reactive({
   form: {
@@ -29,6 +32,7 @@ const submit = async () => {
     await router.push('/');
   }
 };
+
 </script>
 
 <template>
@@ -64,6 +68,10 @@ const submit = async () => {
         </div>
         <button class="w-100 h6 btn py-3 btn-primary">로그인</button>
       </form>
+      <div class="mb-3">
+        <span class="pointer" style="display: flex;"><a :href="`${beBaseUrl}/oauth2/authorization/naver?redirect_uri=${redirectUrl}`">네이버</a></span>        
+        <span class="pointer" style="display: inline;"><a :href="`${beBaseUrl}/oauth2/authorization/kakao?redirect_uri=${redirectUrl}`">카카오</a></span>        
+      </div>
       <div>
         <router-link to="/sign-up"><span>회원가입</span></router-link>
       </div>
